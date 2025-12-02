@@ -1,0 +1,145 @@
+---
+title: "فهرست کلی مستندات"
+sidebar_label: "فهرست"
+---
+
+# فهرست کلی مستندات
+
+## 1. معرفی و راهنمای استفاده
+- درباره این مستندات چیست؟
+- مخاطب چه کسانی هستند؟
+- چطور از این مستندات استفاده کنیم؟
+- استانداردها و قراردادهای نوشتن
+
+## 2. Onboarding برای نفر جدید
+- تصویر کلی شرکت و تیم‌ها
+- استک کلی تکنولوژی‌ها
+- دسترسی‌ها و اکانت‌ها (GitHub، Azure، n8n، MinIO و ...)
+- چک‌لیست روز اول / هفته اول
+- راهنمای «از اینجا شروع کن»
+
+## 3. مفاهیم پایه و پیش‌نیازها
+- مبانی کار با خط فرمان (CLI)
+- مفاهیم شبکه (IP، Port، DNS، HTTP، HTTPS و ...)
+- مفاهیم عمومی Backend / API / Microservices
+- مبانی کار با Linux (در حد نیاز تیم)
+
+## 4. ابزارهای همکاری و کنترل نسخه
+### 4.1 Git
+- معرفی Git و مزیت‌ها
+- نصب و تنظیم اولیه (config، SSH key و ...)
+- مفاهیم اصلی: commit، branch، merge، rebase، tag
+- استراتژی branching تیم (main، develop، feature/*، hotfix/* و ...)
+- workflow روزمره در تیم:
+  - شروع کار روی feature جدید
+  - sync شدن با main
+  - ارسال Pull Request
+- استاندارد نام‌گذاری branch و commit message
+- cheat sheet دستورات مهم
+- خطاهای رایج و رفع اشکال
+
+### 4.2 GitHub
+- ساختار سازمان / organization و repositoryها
+- convention نام‌گذاری repoها
+- Pull Request:
+  - template و چک‌لیست review
+  - قوانین merge
+- GitHub Actions / CI:
+  - overview pipelineها
+- مدیریت issues و boardها
+
+## 5. زیرساخت و DevOps / Platform
+
+### 5.1 Docker
+- معرفی Docker و دلیل استفاده در تیم
+- نصب و راه‌اندازی روی سیستم توسعه
+- مفاهیم اصلی: image، container، volume، network
+- دستورات پایه Docker (run، build، ps، logs، exec و ...)
+- استاندارد نوشتن Dockerfile در تیم
+- Docker Compose:
+  - ساختار فایل
+  - مثال از stack واقعی پروژه
+- registry و مدیریت imageها
+- الگوهای استفاده در تیم (dev، test، prod)
+- خطاهای رایج و رفع اشکال
+
+### 5.2 Azure
+- Azure در کانتکست شرکت
+- ساختار subscription / resource group / naming
+- سرویس‌های مورد استفاده (App Service، Functions، Storage، Key Vault و ...)
+- نحوه اتصال local به Azure (CLI، Portal و ...)
+- فرآیند deploy روی Azure (CI/CD)
+- مانیتورینگ و لاگ‌برداری
+
+### 5.3 n8n
+- معرفی و use caseهای n8n در تیم
+- معماری و نحوه deploy (مثلاً با Docker)
+- استاندارد طراحی workflowها
+- مثال workflowهای واقعی تیم
+- logging و debug در n8n
+
+### 5.4 MinIO
+- معرفی MinIO و نسبت آن با S3
+- مفاهیم: bucket، object، policy
+- ساختار bucketها و naming در شرکت
+- اتصال سرویس‌ها به MinIO
+- backup، امنیت و دسترسی‌ها
+
+## 6. معماری‌ها و طراحی سیستم
+
+- تصویر کلی معماری سیستم‌های شرکت (نمودار high-level)
+- سبک معماری (Monolith / Microservices / Event-driven و ...)
+- الگوهای مهم (CQRS، DDD، Outbox، Saga در صورت استفاده)
+- guideline طراحی سرویس جدید:
+  - لایه‌بندی
+  - نحوه ارتباط با سرویس‌های دیگر
+  - logging و error handling
+
+## 7. فرآیندها و گردش کار (Processes & Flows)
+
+- فرآیند توسعه تا deploy:
+  - از task تا merge
+  - از merge تا deploy
+- Release management و نسخه‌گذاری
+- مدیریت bug و incident
+- استاندارد code review
+- امنیت و مدیریت secretها (Key Vault، env variables و ...)
+
+## 8. راهنماهای عملی و آموزش‌های فشرده (How-to / Tutorials)
+
+- «چطور محیط توسعه را روی سیستم خودم راه‌اندازی کنم»
+- «چطور پروژه X را برای اولین بار اجرا کنم»
+- «چطور سرویس Y را debug کنم»
+- «چطور feature جدید را از صفر تا deploy پیش ببرم»
+- آموزش‌های فشرده:
+  - Git در حد نیاز تیم
+  - Docker در حد نیاز تیم
+  - Azure در حد نیاز تیم
+  - n8n در حد نیاز تیم
+
+## 9. Runbookها و Troubleshooting
+
+- سرویس X بالا نمی‌آید، چه کار کنم؟
+- pipeline CI/Y مشکل دارد، چه کار کنم؟
+- مشکل در اتصال به MinIO
+- مشکل در workflowهای n8n
+- برای هر runbook:
+  - Symptoms
+  - Possible causes
+  - Steps to diagnose
+  - Steps to fix
+  - Validation
+
+## 10. ابزارهای کمکی توسعه
+
+- IDEها و تنظیمات پیشنهادی (VS Code، Rider و ...)
+- افزونه‌های پیشنهادی (lint، format، git integration و ...)
+- ابزارهای تست API (Postman، Insomnia و ...)
+- ابزارهای دیتابیس (DBeaver، TablePlus و ...)
+- ترمینال / shell پیشنهادی
+
+## 11. منابع و مطالعه بیشتر
+
+- لینک مستندات رسمی هر ابزار (Git، Docker، Azure، n8n، MinIO و ...)
+- دوره‌ها و ویدیوهای پیشنهادی
+- پیشنهاد مسیر یادگیری برای هر نقش (Backend، DevOps و ...)
