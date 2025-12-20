@@ -1,8 +1,368 @@
 ---
-title: "Docker – معرفی و مفاهیم"
+title: "راهنمای جامع Docker"
 sidebar_label: "Docker"
 ---
 
-# Docker – معرفی و مفاهیم
+# راهنمای جامع Docker
 
-در این صفحه، Docker، مفاهیم اصلی آن و دلیل استفاده تیم از آن توضیح داده می‌شود.
+این راهنمای گام‌به‌گام برای یادگیری Docker از سطح مقدماتی تا حرفه‌ای تهیه شده است. همه‌ی مفاهیم، ابزارها و الگوهای رایج همراه با مثال‌های عملی و قابل استفاده در پروژه‌های واقعی ارائه شده‌اند.
+
+## ۱. معرفی Docker
+
+### Docker چیست؟
+Docker یک پلتفرم متن‌باز برای ساخت، بسته‌بندی و اجرای برنامه‌ها در محیط‌های ایزوله (Container) است. کانتینرها همان کد، وابستگی‌ها و تنظیمات برنامه را در قالب یک واحد سبک‌وزن حمل‌پذیر می‌کنند و بدون توجه به سیستم‌عامل میزبان، رفتار یکسانی ارائه می‌دهند.
+
+### تفاوت Docker با ماشین مجازی (VM)
+- **منابع**: کانتینرها از کرنل سیستم‌عامل میزبان استفاده می‌کنند و تنها فضای کاربر را ایزوله می‌کنند؛ VM ها یک سیستم‌عامل کامل را شبیه‌سازی می‌کنند و سربار بیشتری دارند.
+- **سرعت اجرا**: ساخت و راه‌اندازی کانتینر در چند ثانیه انجام می‌شود، در حالی که بوت VM زمان‌بر است.
+- **حمل‌پذیری**: Image کانتینر روی هر میزبان سازگار با Docker بدون تغییر اجرا می‌شود؛ VM به Hypervisor و تنظیمات خاص وابسته است.
+- **کاربرد**: کانتینر برای Microserviceها، CI/CD و محیط‌های تکرارپذیر مناسب‌تر است، VM برای ایزولیشن کامل یا اجرای سیستم‌عامل‌های متفاوت.
+
+### معماری Docker
+- **Client**: رابط CLI (`docker`) یا API برای ارسال دستورات.
+- **Engine**: موتور Docker شامل Daemon و اجزای داخلی که Image و Container را مدیریت می‌کند.
+- **Host**: سروری که Engine روی آن نصب است؛ می‌تواند لینوکس، ویندوز یا مک باشد.
+- **Daemon (`dockerd`)**: پردازش پس‌زمینه که درخواست‌ها را دریافت و منابع را مدیریت می‌کند.
+- **Registry**: مخزن Image (مانند Docker Hub، GHCR یا Registry خصوصی).
+
+### مفاهیم کلیدی
+- **Image**: قالب فقط-خواندنی شامل سیستم فایل و متادیتا. با `Dockerfile` ساخته می‌شود.
+- **Container**: نمونه‌ی در حال اجرای یک Image که لایه‌ی writable دارد.
+- **Volume**: محل پایدار برای ذخیره داده خارج از چرخه‌ی عمر Container.
+- **Network**: کانال ارتباطی بین کانتینرها یا بین کانتینر و میزبان.
+
+## ۲. نصب Docker
+
+### ویندوز
+1. نصب **Docker Desktop** از سایت رسمی.
+2. فعال‌سازی WSL2 (در صورت نیاز) و ری‌استارت.
+3. اجرای دستور آزمایشی:
+
+```powershell
+docker version
+```
+
+### مک (Intel/Apple Silicon)
+1. نصب Docker Desktop برای معماری مناسب.
+2. پس از اجرا، آیکون نهنگ باید سبز باشد.
+3. تست:
+
+```bash
+docker run --rm hello-world
+```
+
+### لینوکس (Ubuntu مثال)
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER # برای اجرای بدون sudo
+newgrp docker
+```
+
+### تست نصب اولیه
+```bash
+docker info
+docker run --rm hello-world
+```
+
+## ۳. آموزش کامل دستورات Docker
+
+### دستورات Image
+- **فهرست Image‌ها**: `docker images`
+- **دریافت Image**: `docker pull ubuntu:22.04`
+- **حذف Image**: `docker rmi ubuntu:22.04`
+- **ساخت Image**: `docker build -t myapp:1.0 .`
+- **Tag جدید**: `docker tag myapp:1.0 registry.example.com/myapp:prod`
+
+### دستورات Container
+- **اجرای موقت**: `docker run --rm -it ubuntu:22.04 bash`
+- **اجرای detached**: `docker run -d --name web -p 8080:80 nginx:alpine`
+- **فهرست کانتینرها**: `docker ps -a`
+- **توقف/حذف**: `docker stop web && docker rm web`
+- **راه‌اندازی مجدد**: `docker restart web`
+- **کپی فایل**: `docker cp config.json web:/etc/nginx/conf.d/`
+- **مشاهده فرآیندها**: `docker top web`
+- **مشاهده لاگ**: `docker logs -f web`
+- **ورود به کانتینر**: `docker exec -it web sh`
+- **Inspect متادیتا**: `docker inspect web`
+
+### مدیریت شبکه
+- **لیست شبکه‌ها**: `docker network ls`
+- **ایجاد شبکه bridge**: `docker network create --driver bridge app-net`
+- **اتصال کانتینر**: `docker network connect app-net web`
+- **جدا کردن**: `docker network disconnect app-net web`
+- **حذف شبکه**: `docker network rm app-net`
+
+### مدیریت Volume
+- **لیست Volume**: `docker volume ls`
+- **ایجاد**: `docker volume create app-data`
+- **اتصال در run**: `docker run -d -v app-data:/var/lib/data busybox sleep 3600`
+- **Inspect**: `docker volume inspect app-data`
+- **حذف**: `docker volume rm app-data`
+
+### Registry و Docker Hub
+- **ورود**: `docker login`
+- **ارسال Image**: `docker push registry.example.com/myapp:1.0`
+- **خروج**: `docker logout`
+- **جستجو در Hub**: `docker search redis`
+
+### دستورات کاربردی دیگر
+- **پاکسازی منابع**: `docker system prune -af`
+- **مشاهده فضای مصرفی**: `docker system df`
+- **Export/Import کانتینر**: `docker export web > web.tar` و `cat web.tar | docker import - web:backup`
+
+## ۴. Dockerfile
+
+### ساخت Image
+یک Dockerfile ساده برای Node.js:
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+COPY . .
+CMD ["node", "server.js"]
+EXPOSE 3000
+```
+
+ساخت:
+```bash
+docker build -t sample-node:1.0 .
+```
+
+### دستورات مهم Dockerfile (نمونه)
+- `FROM base:tag` تعیین Image پایه.
+- `WORKDIR /path` تنظیم مسیر کاری.
+- `COPY src/ /dest/` کپی فایل‌ها.
+- `RUN cmd` اجرای دستور در زمان build.
+- `CMD ["executable", "arg"]` فرمان پیش‌فرض در زمان run.
+- `ENTRYPOINT [...]` برای تعریف نقطه ورود ثابت.
+- `ENV KEY value` تعیین متغیر محیطی.
+- `ARG NAME` دریافت متغیر build-time.
+- `EXPOSE 80` مستندسازی پورت.
+- `HEALTHCHECK CMD curl -f http://localhost:80 || exit 1` تعریف سلامت.
+- `USER app` اجرای پردازش با کاربر غیر-root.
+- `VOLUME /data` تعریف مسیر داده پایدار.
+
+### بهینه‌سازی Image
+- استفاده از Image پایه کوچک (مثلاً `alpine`).
+- حذف وابستگی‌های Build پس از نصب (`apk add --no-cache ... && rm -rf /var/cache/apk/*`).
+- استفاده از `.dockerignore` برای حذف فایل‌های غیرضروری.
+- ثابت نگه داشتن لایه‌ها با ترتیب مناسب (COPY package*.json پیش از COPY کل پروژه).
+- استفاده از `multi-stage build` برای جدا کردن مرحله Build و Runtime.
+
+### نمونه multi-stage build
+
+```dockerfile
+# Stage 1: Build
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Runtime
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package*.json ./
+RUN npm ci --only=production
+USER node
+CMD ["node", "dist/server.js"]
+```
+
+## ۵. Docker Compose
+
+### ساخت docker-compose.yml
+```yaml
+version: "3.9"
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
+```
+
+### شبکه‌سازی در Compose
+- به صورت پیش‌فرض یک شبکه bridge با نام پروژه ساخته می‌شود.
+- سرویس‌ها با نام سرویس در DNS داخلی یکدیگر را پیدا می‌کنند (`api` ⇄ `db`).
+- می‌توان شبکه‌های سفارشی تعریف کرد:
+
+```yaml
+networks:
+  internal:
+    driver: bridge
+```
+
+### Environment variables
+- استفاده از `.env` در ریشه پروژه.
+- تعریف مستقیم در `environment` یا `env_file`.
+- برای مقادیر حساس از Secret Providerها استفاده کنید (در Docker Swarm/K8s).
+
+### مثال‌های کاربردی
+- **پشته MERN/Node**: سرویس `api` + `nginx` + `mongo`.
+- **پشته Python/Django**: `web` + `celery` + `redis` + `db`.
+- **پروکسی معکوس**: `nginx` یا `traefik` برای مسیریابی چند سرویس.
+
+اجرا و مدیریت:
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs -f api
+docker compose down --volumes
+```
+
+## ۶. سناریوهای واقعی
+
+### اجرای Nginx ساده
+```bash
+docker run -d --name nginx -p 8080:80 nginx:alpine
+```
+پیکربندی سفارشی با Volume:
+```bash
+docker run -d --name nginx \
+  -p 8080:80 \
+  -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro \
+  nginx:alpine
+```
+
+### اجرای برنامه Node.js
+```dockerfile
+# Dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+CMD ["node", "server.js"]
+EXPOSE 3000
+```
+
+```bash
+docker build -t node-app .
+docker run -d --name node-app -p 3000:3000 node-app
+```
+
+### اجرای برنامه Python (FastAPI)
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+```
+
+### دیتابیس‌ها
+- **MySQL**:
+  ```bash
+  docker run -d --name mysql -p 3306:3306 \
+    -e MYSQL_ROOT_PASSWORD=secret \
+    -e MYSQL_DATABASE=app \
+    -v mysql-data:/var/lib/mysql mysql:8
+  ```
+- **PostgreSQL**:
+  ```bash
+  docker run -d --name postgres -p 5432:5432 \
+    -e POSTGRES_PASSWORD=secret \
+    -e POSTGRES_USER=app \
+    -e POSTGRES_DB=appdb \
+    -v pg-data:/var/lib/postgresql/data postgres:16-alpine
+  ```
+- **MongoDB**:
+  ```bash
+  docker run -d --name mongo -p 27017:27017 \
+    -v mongo-data:/data/db mongo:7
+  ```
+
+### اتصال چند سرویس به هم (Compose مثال)
+```yaml
+version: "3.9"
+services:
+  web:
+    build: ./web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgres://app:secret@db:5432/appdb
+    depends_on:
+      - db
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
+```
+
+## ۷. امنیت در Docker
+
+### بهترین روش‌ها
+- اجرا با **کاربر غیر-root** (`USER app`).
+- محدود کردن قابلیت‌ها با `--cap-drop ALL --cap-add NET_BIND_SERVICE` در صورت نیاز.
+- استفاده از **Imageهای رسمی و به‌روز**؛ تگ‌های مشخص (نه `latest`).
+- فعال‌سازی **Read-only filesystem** برای سرویس‌هایی که نیاز به نوشتن ندارند (`--read-only`).
+- محدود کردن منابع: `--memory`, `--cpus`, `--pids-limit`.
+- عدم قرار دادن Secrets در Image؛ استفاده از Variable یا Secret Store.
+
+### اسکن Image‌ها
+- استفاده از `docker scan IMAGE` یا ابزارهایی مانند **Trivy**:
+  ```bash
+  trivy image node:20-alpine
+  ```
+- پایش منظم و به‌روزرسانی Image پایه.
+
+### جداسازی شبکه و دسترسی
+- استفاده از شبکه‌های اختصاصی و عدم اکسپوز پورتهای غیرضروری.
+- قرار دادن Reverse Proxy در لبه و محدود کردن دسترسی مستقیم به سرویس‌ها.
+
+## ۸. Debug و Troubleshooting
+- **لاگ‌ها**: `docker logs -f <container>`
+- **وارد شدن به شل**: `docker exec -it <container> sh` یا `bash`
+- **وضعیت منابع**: `docker stats` برای بررسی CPU/RAM/IO.
+- **Inspect**: جزییات شبکه، Mount، Env با `docker inspect <name>`.
+- **پروفایل شبکه**: استفاده از `docker exec <name> ss -tulpn` یا ابزار `tcpdump` در کانتینر.
+- **پاکسازی منابع اضافی**: `docker system prune -af` در محیط توسعه.
+- **رفع خطای Build**: بررسی لایه‌های کش با `--no-cache` و مشاهده خروجی کامل Build.
+
+## ۹. نکات حرفه‌ای
+- **کش‌کردن لایه‌ها**: ترتیب COPY/ RUN را به‌گونه‌ای بچینید که لایه‌های تغییرناپذیر در بالا باشند تا Build سریع‌تر شود.
+- **لایه‌بندی Image**: هر دستور Dockerfile یک لایه می‌سازد؛ دستورها را ترکیب و از دستورهای اضافی پرهیز کنید.
+- **Image سبک (Alpine/Distroless)**: برای کاهش حجم و سطح حمله از پایه‌های سبک استفاده کنید، اما نیازمندی‌های باینری را بسنجید.
+- **مدیریت نسخه‌ها**: از Tagهای معنایی (`1.2.0`, `1.2.0-alpine`) استفاده کنید و Buildهای تکرارپذیر با قفل وابستگی‌ها (lockfile) بسازید.
+- **Registry خصوصی**: برای سرعت و امنیت بهتر، Imageها را در Registry داخلی یا CDN شده نگه‌داری کنید.
+- **CI/CD**: Build و Push خودکار با استفاده از pipeline (مثلاً GitHub Actions) و امضای Image با Notary یا cosign.
+
+---
+این سند می‌تواند به عنوان مرجع آموزش سریع و حرفه‌ای Docker استفاده شود و همراه با نمونه‌کدها، شما را از راه‌اندازی اولیه تا پیاده‌سازی در پروژه‌های واقعی هدایت می‌کند.
