@@ -1,0 +1,334 @@
+---
+title: "مستندات جامع Migrations در Entity Framework Core"
+sidebar_label: "Migrations در EF Core"
+---
+
+# مستندات جامع Migrations در Entity Framework Core
+
+این مستند یک راهنمای **کامل، مرحله‌به‌مرحله و حرفه‌ای** برای مبحث **Migrations در Entity Framework Core** است و به‌گونه‌ای تدوین شده که هم برای **یادگیری آموزشی** و هم به‌عنوان **مرجع (Documentation)** در پروژه‌های واقعی قابل استفاده باشد.
+
+---
+
+## 1. معرفی Migrations در EF Core
+
+### Migrations چیست؟
+Migration مکانیزمی در EF Core است که به شما اجازه می‌دهد **تغییرات مدل‌های C#** را به‌صورت **کنترل‌شده و نسخه‌بندی‌شده** به دیتابیس منتقل کنید.
+
+به زبان ساده:
+- شما مدل را تغییر می‌دهید
+- EF Core تغییر را تشخیص می‌دهد
+- Migration تولید می‌شود
+- دیتابیس به‌روزرسانی می‌شود
+
+### چرا از Migrations استفاده می‌کنیم؟
+- جلوگیری از تغییر دستی دیتابیس
+- هماهنگی کد و دیتابیس
+- امکان بازگشت (Rollback)
+- مناسب برای کار تیمی
+- مدیریت نسخه دیتابیس
+
+### Database First vs Code First
+
+**Database First**:
+- دیتابیس از قبل وجود دارد
+- مدل‌ها از دیتابیس تولید می‌شوند
+- Migration معمولاً کاربرد ندارد
+
+**Code First (رویکرد EF Core)**:
+- مدل‌ها مبنا هستند
+- دیتابیس از روی کد ساخته می‌شود
+- Migration ستون فقرات توسعه است
+
+### نقش Migrations در توسعه نرم‌افزار
+- توسعه تدریجی دیتابیس
+- استقرار امن در Production
+- مدیریت تغییرات در CI/CD
+
+---
+
+## 2. پیش‌نیازها
+
+### نصب EF Core
+
+```bash
+dotnet add package Microsoft.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+```
+
+### نصب EF Core Tools
+
+```bash
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+```
+
+یا به‌صورت سراسری:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+### بررسی نسخه‌ها
+
+```bash
+dotnet --version
+dotnet ef --version
+```
+
+نسخه EF Core باید با .NET SDK سازگار باشد.
+
+### تنظیم DbContext
+
+```csharp
+public class AppDbContext : DbContext
+{
+    public DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        options.UseSqlServer("Server=.;Database=EfCoreDemo;Trusted_Connection=True;");
+    }
+}
+```
+
+---
+
+## 3. ایجاد اولین Migration
+
+### دستور Add-Migration (Package Manager Console)
+
+```powershell
+Add-Migration InitialCreate
+```
+
+### دستور CLI
+
+```bash
+dotnet ef migrations add InitialCreate
+```
+
+### ساختار فایل‌های Migration
+
+- `yyyyMMddHHmmss_InitialCreate.cs`
+- `yyyyMMddHHmmss_InitialCreate.Designer.cs`
+- `AppDbContextModelSnapshot.cs`
+
+### بررسی Up و Down
+
+```csharp
+protected override void Up(MigrationBuilder migrationBuilder)
+{
+    migrationBuilder.CreateTable(
+        name: "Users",
+        columns: table => new
+        {
+            Id = table.Column<int>(nullable: false)
+                .Annotation("SqlServer:Identity", "1, 1"),
+            Name = table.Column<string>(nullable: false)
+        },
+        constraints: table =>
+        {
+            table.PrimaryKey("PK_Users", x => x.Id);
+        });
+}
+
+protected override void Down(MigrationBuilder migrationBuilder)
+{
+    migrationBuilder.DropTable(name: "Users");
+}
+```
+
+---
+
+## 4. اعمال Migration روی دیتابیس
+
+### Update-Database
+
+```powershell
+Update-Database
+```
+
+### CLI
+
+```bash
+dotnet ef database update
+```
+
+### چه اتفاقی می‌افتد؟
+- جدول `__EFMigrationsHistory` ساخته می‌شود
+- Migration اجرا می‌شود
+- دیتابیس همگام می‌شود
+
+---
+
+## 5. تغییرات رایج در Migrations
+
+### اضافه کردن ستون
+
+```csharp
+migrationBuilder.AddColumn<string>(
+    name: "Email",
+    table: "Users",
+    nullable: true);
+```
+
+### حذف ستون
+
+```csharp
+migrationBuilder.DropColumn(
+    name: "Email",
+    table: "Users");
+```
+
+### Nullable و Not Nullable
+
+```csharp
+table.Column<string>(nullable: false)
+```
+
+### Default Value
+
+```csharp
+table.Column<bool>(nullable: false, defaultValue: true)
+```
+
+### Index
+
+```csharp
+migrationBuilder.CreateIndex(
+    name: "IX_Users_Email",
+    table: "Users",
+    column: "Email");
+```
+
+### Unique Constraint
+
+```csharp
+migrationBuilder.CreateIndex(
+    name: "IX_Users_Email",
+    table: "Users",
+    column: "Email",
+    unique: true);
+```
+
+### Foreign Key
+
+```csharp
+migrationBuilder.AddForeignKey(
+    name: "FK_Orders_Users_UserId",
+    table: "Orders",
+    column: "UserId",
+    principalTable: "Users",
+    principalColumn: "Id",
+    onDelete: ReferentialAction.Cascade);
+```
+
+---
+
+## 6. مدیریت Migrations
+
+### حذف آخرین Migration
+
+```powershell
+Remove-Migration
+```
+
+### بازگشت به Migration قبلی
+
+```powershell
+Update-Database InitialCreate
+```
+
+### مشاهده لیست Migrations
+
+```powershell
+Get-Migration
+```
+
+### Development vs Production
+
+- در Dev: حذف و تغییر Migration مجاز است
+- در Prod: فقط Migration جدید
+
+---
+
+## 7. Migration در پروژه‌های واقعی
+
+### چند محیط
+- Connection String جداگانه
+- Migration مشترک
+
+### Best Practices
+- هر Migration یک تغییر
+- نام‌گذاری واضح
+- عدم ویرایش Migration اجراشده
+
+---
+
+## 8. دستورات مهم EF Core Migrations
+
+```powershell
+Add-Migration AddEmailToUser
+Update-Database
+Remove-Migration
+Script-Migration
+Get-Migration
+```
+
+معادل CLI:
+
+```bash
+dotnet ef migrations add
+dotnet ef database update
+dotnet ef migrations remove
+dotnet ef migrations script
+```
+
+---
+
+## 9. تولید SQL Script
+
+```powershell
+Script-Migration
+```
+
+کاربرد:
+- اجرا در Production
+- بررسی قبل از اعمال
+
+---
+
+## 10. خطاهای رایج
+
+### Pending Migrations
+
+```text
+There are pending migrations
+```
+راه‌حل: اجرای Update-Database
+
+### Model changes detected
+- Migration نگرفته‌اید
+
+### Connection String
+- بررسی appsettings.json
+
+---
+
+## 11. جمع‌بندی نهایی
+
+### نکات طلایی
+- Migration قلب Code First است
+- همیشه قبل از Production تست کنید
+- SQL Script را بررسی کنید
+
+### اشتباهات متداول
+- ویرایش Migration اجراشده
+- Migration بزرگ و چندمنظوره
+
+### توصیه حرفه‌ای
+- Migration کوچک، واضح و مستمر
+- استفاده در CI/CD
+
+---
+
+**این مستند به‌عنوان یک مرجع کامل برای EF Core Migrations قابل استفاده است.**
